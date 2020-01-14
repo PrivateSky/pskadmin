@@ -1,12 +1,18 @@
-const pskBuildPath = '../../psknode/bin/scripts/pskbuild.js';
 require('../../psknode/bundles/pskruntime');
 require('../../psknode/bundles/psknode');
 require('../../psknode/bundles/edfsBar');
 
-function createConstitutionFromSources(sources, outputFolder, options, callback) {
+function createConstitutionFromSources(sources, options, callback) {
     const child_process = require('child_process');
     const path = require('path');
     const fs = require('fs');
+    const pskBuildPath = path.resolve(path.join(__dirname, '../../psknode/bin/scripts/pskbuild.js'));
+
+    let internalOptions = {
+        constitutionName: 'constitution',
+        outputFolder: null,
+        cleanupTmpDir: true
+    };
 
     if (typeof sources === 'string') {
         sources = [sources];
@@ -14,12 +20,11 @@ function createConstitutionFromSources(sources, outputFolder, options, callback)
 
     if (typeof options === 'function') {
         callback = options;
-        options = {}
+    } else if (typeof options === 'string') {
+        internalOptions.outputFolder = options;
+    } else if (typeof options === 'object') {
+        Object.assign(internalOptions, options);
     }
-
-    options = Object.assign({
-        constitutionName: 'constitution'
-    }, options);
 
     let sourcesNames = [];
     let sourcesPaths = [];
@@ -33,7 +38,7 @@ function createConstitutionFromSources(sources, outputFolder, options, callback)
     sourcesPaths = sourcesPaths.join(',');
 
     const projectMap = {
-        [options.constitutionName]: {"deps": sourcesNames, "autoLoad": true},
+        [internalOptions.constitutionName]: {"deps": sourcesNames, "autoLoad": true},
     };
 
     getTmpDir('PSK_DOMAIN-', (err, tmpFolder) => {
@@ -47,18 +52,29 @@ function createConstitutionFromSources(sources, outputFolder, options, callback)
                 return callback(err);
             }
 
+            let outputFolder = null;
+
+            if(internalOptions.outputFolder) {
+                outputFolder = internalOptions.outputFolder;
+            } else {
+                internalOptions.cleanupTmpDir = false;
+                outputFolder = tmpFolder;
+            }
+
             child_process.exec(`node ${pskBuildPath} --projectMap=${projectMapPath} --source=${sourcesPaths} --output=${outputFolder}`, (err) => {
                 if (err) {
                     return callback(err);
                 }
 
-                callback(undefined, path.join(outputFolder, `${options.constitutionName}.js`));
+                callback(undefined, path.join(outputFolder, `${internalOptions.constitutionName}.js`));
 
-                fs.rmdir(tmpFolder, {recursive: true}, (err) => {
-                    if (err) {
-                        console.warn(`Failed to delete temporary folder "${tmpFolder}"`);
-                    }
-                });
+                if(internalOptions.cleanupTmpDir) {
+                    fs.rmdir(tmpFolder, {recursive: true}, (err) => {
+                        if (err) {
+                            console.warn(`Failed to delete temporary folder "${tmpFolder}"`);
+                        }
+                    });
+                }
             });
         });
     });
