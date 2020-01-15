@@ -54,7 +54,7 @@ function createConstitutionFromSources(sources, options, callback) {
 
             let outputFolder = null;
 
-            if(internalOptions.outputFolder) {
+            if (internalOptions.outputFolder) {
                 outputFolder = internalOptions.outputFolder;
             } else {
                 internalOptions.cleanupTmpDir = false;
@@ -68,7 +68,7 @@ function createConstitutionFromSources(sources, options, callback) {
 
                 callback(undefined, path.join(outputFolder, `${internalOptions.constitutionName}.js`));
 
-                if(internalOptions.cleanupTmpDir) {
+                if (internalOptions.cleanupTmpDir) {
                     fs.rmdir(tmpFolder, {recursive: true}, (err) => {
                         if (err) {
                             console.warn(`Failed to delete temporary folder "${tmpFolder}"`);
@@ -80,12 +80,9 @@ function createConstitutionFromSources(sources, options, callback) {
     });
 }
 
-function deployConstitutionCSB(constitutionBundle, edfsURL, callback) {
+function deployConstitutionCSB(constitutionBundle, callback) {
     const EDFS = require('edfs');
     const brickStorageStrategyName = "http";
-
-    $$.securityContext = require("psk-security-context").createSecurityContext();
-    $$.brickTransportStrategiesRegistry.add(brickStorageStrategyName, EDFS.createHTTPBrickTransportStrategy(edfsURL));
 
     const edfs = EDFS.attach(brickStorageStrategyName);
 
@@ -119,6 +116,20 @@ function getConstitutionFilesFromBar(seed, callback) {
     readConstitutionFrom(constitutionBAR, callback)
 }
 
+function getConstitutionFilesFromCSB(seed, callback) {
+    const EDFS = require('edfs');
+    const brickStorageStrategyName = "http";
+
+    const edfs = EDFS.attach(brickStorageStrategyName);
+    edfs.loadCSB(seed, (err, constitutionCSB) => {
+        if (err) {
+            return callback(err);
+        }
+
+        readConstitutionFrom(constitutionCSB, callback);
+    });
+}
+
 function ensureEnvironmentIsReady(edfsURL) {
     const EDFS = require('edfs');
     const brickStorageStrategyName = "http";
@@ -146,13 +157,13 @@ function addFilesToArchive(files, archive, callback) {
     asyncReduce(files, __addFile, null, callback);
 
     function __addFile(_, filePath, callback) {
-        archive.addFile(filePath, path.basename(filePath), callback);
+        archive.addFile(filePath, 'constitutions/' + path.basename(filePath), callback);
     }
 }
 
 function readConstitutionFrom(archive, callback) {
 
-    archive.listFiles('', (err, files) => {
+    archive.listFiles('constitutions', (err, files) => {
         if (err) {
             return callback(err);
         }
@@ -224,5 +235,6 @@ module.exports = {
     deployConstitutionBar,
     deployConstitutionCSB,
     ensureEnvironmentIsReady,
-    getConstitutionFilesFromBar
+    getConstitutionFilesFromBar,
+    getConstitutionFilesFromCSB
 };
