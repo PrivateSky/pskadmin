@@ -117,11 +117,7 @@ function getConstitutionFilesFromBar(seed, callback) {
 }
 
 function getConstitutionFilesFromCSB(seed, callback) {
-    const EDFS = require('edfs');
-    const brickStorageStrategyName = "http";
-
-    const edfs = EDFS.attach(brickStorageStrategyName);
-    edfs.loadCSB(seed, (err, constitutionCSB) => {
+    loadCSB(seed, (err, constitutionCSB) => {
         if (err) {
             return callback(err);
         }
@@ -143,6 +139,18 @@ function ensureEnvironmentIsReady(edfsURL) {
     if (!hasHttpStrategyRegistered) {
         $$.brickTransportStrategiesRegistry.add(brickStorageStrategyName, EDFS.createHTTPBrickTransportStrategy(edfsURL));
     }
+}
+
+function loadCSB(seed, callback) {
+    const EDFS = require('edfs');
+    const Seed = require('bar').Seed;
+    const brickStorageStrategyName = "http";
+
+    const seedObject = new Seed(seed);
+    ensureEnvironmentIsReady(seedObject.getEndpoint());
+
+    const edfs = EDFS.attach(brickStorageStrategyName);
+    edfs.loadCSB(seed, callback);
 }
 
 /****************************** UTILITY FUNCTIONS ******************************/
@@ -236,5 +244,6 @@ module.exports = {
     deployConstitutionCSB,
     ensureEnvironmentIsReady,
     getConstitutionFilesFromBar,
-    getConstitutionFilesFromCSB
+    getConstitutionFilesFromCSB,
+    loadCSB
 };
