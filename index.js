@@ -1,7 +1,3 @@
-require('../../psknode/bundles/pskruntime');
-require('../../psknode/bundles/psknode');
-require('../../psknode/bundles/edfsBar');
-
 function createConstitutionFromSources(sources, options, callback) {
     const child_process = require('child_process');
     const path = require('path');
@@ -165,7 +161,17 @@ function addFilesToArchive(files, archive, callback) {
     asyncReduce(files, __addFile, null, callback);
 
     function __addFile(_, filePath, callback) {
-        archive.addFile(filePath, 'constitutions/' + path.basename(filePath), callback);
+
+        archive.listFiles('', (err, files) => {
+            if(err) {
+                return callback(err);
+            }
+
+            console.log('files', files);
+            archive.addFile(filePath, 'constitutions/' + path.basename(filePath), callback);
+
+        })
+
     }
 }
 
