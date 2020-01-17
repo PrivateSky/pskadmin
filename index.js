@@ -133,7 +133,7 @@ function ensureEnvironmentIsReady(edfsURL) {
     const hasHttpStrategyRegistered = $$.brickTransportStrategiesRegistry.has(brickStorageStrategyName);
 
     if (!hasHttpStrategyRegistered) {
-        $$.brickTransportStrategiesRegistry.add(brickStorageStrategyName, EDFS.createHTTPBrickTransportStrategy(edfsURL));
+        $$.brickTransportStrategiesRegistry.add(brickStorageStrategyName, new EDFS.HTTPBrickTransportStrategy(edfsURL));
     }
 }
 
