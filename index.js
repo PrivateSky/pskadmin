@@ -149,6 +149,15 @@ function loadCSB(seed, callback) {
     edfs.loadCSB(seed, callback);
 }
 
+function createCSB(callback) {
+    const EDFS = require('edfs');
+    const brickStorageStrategyName = "http";
+
+    const edfs = EDFS.attach(brickStorageStrategyName);
+
+    edfs.createCSB(callback);
+}
+
 /****************************** UTILITY FUNCTIONS ******************************/
 
 function addFilesToArchive(files, archive, callback) {
@@ -251,5 +260,6 @@ module.exports = {
     ensureEnvironmentIsReady,
     getConstitutionFilesFromBar,
     getConstitutionFilesFromCSB,
-    loadCSB
+    loadCSB,
+    createCSB
 };
