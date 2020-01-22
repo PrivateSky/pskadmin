@@ -176,7 +176,6 @@ function addFilesToArchive(files, archive, callback) {
                 return callback(err);
             }
 
-            console.log('files', files);
             archive.addFile(filePath, 'constitutions/' + path.basename(filePath), callback);
 
         })
