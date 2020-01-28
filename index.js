@@ -122,7 +122,7 @@ function getConstitutionFilesFromBar(seed, callback) {
     const edfs = EDFS.attach(brickStorageStrategyName);
     const constitutionBAR = edfs.loadBar(seed);
 
-    readConstitutionFrom(constitutionBAR, callback)
+    getConstitutionFilesFrom(constitutionBAR, callback)
 }
 
 function getConstitutionFilesFromCSB(seed, callback) {
@@ -131,7 +131,7 @@ function getConstitutionFilesFromCSB(seed, callback) {
             return callback(err);
         }
 
-        readConstitutionFrom(constitutionCSB, callback);
+        getConstitutionFilesFrom(constitutionCSB, callback);
     });
 }
 
@@ -188,15 +188,26 @@ function addFilesToArchive(files, archive, callback) {
     }
 }
 
-function readConstitutionFrom(archive, callback) {
+function getConstitutionFrom(csb, cb){
+    getConstitutionFilesFrom(csb, undefined, cb);
+}
+
+
+function getConstitutionFilesFrom(archive, specifiedFiles, callback) {
     const EDFS = require('edfs');
+    const path = require('path');
+
+    if(typeof specifiedFiles === 'function') {
+        callback = specifiedFiles;
+    }
 
     archive.listFiles(EDFS.constants.CSB.CONSTITUTION_FOLDER, (err, files) => {
         if (err) {
             return callback(err);
         }
 
-        asyncReduce(files, __readFile, [], callback);
+        files = files.filter(file => specifiedFiles.includes(path.basename(file)));
+        asyncReduce(files, __readFile, {}, callback);
     });
 
 
@@ -206,7 +217,7 @@ function readConstitutionFrom(archive, callback) {
                 return callback(err);
             }
 
-            pastFilesContent.push(fileContent);
+            pastFilesContent[path.basename(filePath)] = fileContent;
             callback();
         });
     }
@@ -267,5 +278,7 @@ module.exports = {
     getConstitutionFilesFromBar,
     getConstitutionFilesFromCSB,
     loadCSB,
-    createCSB
+    createCSB,
+    getConstitutionFrom,
+    getConstitutionFilesFrom
 };
