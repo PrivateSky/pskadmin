@@ -91,6 +91,19 @@ function deployConstitutionCSB(constitutionBundle, callback) {
     });
 }
 
+function deployConstitutionFolderCSB(constitutionFolder, callback) {
+    const fs = require('fs');
+    const path = require('path');
+    fs.readdir(constitutionFolder, (err, files) => {
+        if(err) {
+            return callback(err);
+        }
+
+        files = files.map(file => path.join(constitutionFolder, file));
+        deployConstitutionCSB(files, callback);
+    });
+}
+
 function deployConstitutionBar(constitutionBundle, callback) {
     const EDFS = require('edfs');
     const brickStorageStrategyName = "http";
@@ -161,6 +174,7 @@ function createCSB(callback) {
 /****************************** UTILITY FUNCTIONS ******************************/
 
 function addFilesToArchive(files, archive, callback) {
+    const EDFS = require('edfs');
     const path = require('path');
 
     if (typeof files === 'string') {
@@ -170,13 +184,14 @@ function addFilesToArchive(files, archive, callback) {
     asyncReduce(files, __addFile, null, callback);
 
     function __addFile(_, filePath, callback) {
-        archive.addFile(filePath, 'constitutions/' + path.basename(filePath), callback);
+        archive.addFile(filePath, `${EDFS.constants.CSB.CONSTITUTION_FOLDER}/` + path.basename(filePath), callback);
     }
 }
 
 function readConstitutionFrom(archive, callback) {
+    const EDFS = require('edfs');
 
-    archive.listFiles('constitutions', (err, files) => {
+    archive.listFiles(EDFS.constants.CSB.CONSTITUTION_FOLDER, (err, files) => {
         if (err) {
             return callback(err);
         }
@@ -247,6 +262,7 @@ module.exports = {
     createConstitutionFromSources,
     deployConstitutionBar,
     deployConstitutionCSB,
+    deployConstitutionFolderCSB,
     ensureEnvironmentIsReady,
     getConstitutionFilesFromBar,
     getConstitutionFilesFromCSB,
