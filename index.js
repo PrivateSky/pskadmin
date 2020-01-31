@@ -76,9 +76,15 @@ function createConstitutionFromSources(sources, options, callback) {
     });
 }
 
-function deployConstitutionCSB(constitutionBundle, callback) {
+function deployConstitutionCSB(constitutionBundle, domainName, callback) {
     const EDFS = require('edfs');
     const brickStorageStrategyName = "http";
+
+
+    if(typeof domainName=== "function" && typeof callback === "undefined"){
+        callback = domainName;
+        domainName = "";
+    }
 
     const edfs = EDFS.attach(brickStorageStrategyName);
 
@@ -87,20 +93,32 @@ function deployConstitutionCSB(constitutionBundle, callback) {
             return callback(err);
         }
 
-        addFilesToArchive(constitutionBundle, constitutionCSB, willReturnSeed(constitutionCSB, callback));
+        addFilesToArchive(constitutionBundle, constitutionCSB, (err)=>{
+            if(err){
+                return callback(err);
+            }
+            const lastHandler = willReturnSeed(constitutionCSB, callback);
+
+            if(domainName !== ""){
+                constitutionCSB.writeFile(EDFS.constants.CSB.DOMAIN_IDENTITY_FILE, domainName, lastHandler);
+            }else{
+                lastHandler();
+            }
+        });
     });
 }
 
-function deployConstitutionFolderCSB(constitutionFolder, callback) {
+function deployConstitutionFolderCSB(constitutionFolder, domainName, callback) {
     const fs = require('fs');
     const path = require('path');
+
     fs.readdir(constitutionFolder, (err, files) => {
         if(err) {
             return callback(err);
         }
 
         files = files.map(file => path.join(constitutionFolder, file));
-        deployConstitutionCSB(files, callback);
+        deployConstitutionCSB(files, domainName, callback);
     });
 }
 
