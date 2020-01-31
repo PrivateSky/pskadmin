@@ -189,7 +189,7 @@ function addFilesToArchive(files, archive, callback) {
 }
 
 function getConstitutionFrom(csb, cb){
-    getConstitutionFilesFrom(csb, undefined, cb);
+    getConstitutionFilesFrom(csb, cb);
 }
 
 
@@ -199,6 +199,11 @@ function getConstitutionFilesFrom(archive, specifiedFiles, callback) {
 
     if(typeof specifiedFiles === 'function') {
         callback = specifiedFiles;
+        specifiedFiles = undefined;
+    }
+
+    if(typeof specifiedFiles === "undefined") {
+        specifiedFiles = []; // if specifiedFiles is not given as parameter or is explicitly given as undefined
     }
 
     archive.listFiles(EDFS.constants.CSB.CONSTITUTION_FOLDER, (err, files) => {
@@ -206,7 +211,10 @@ function getConstitutionFilesFrom(archive, specifiedFiles, callback) {
             return callback(err);
         }
 
-        files = files.filter(file => specifiedFiles.includes(path.basename(file)));
+        if(specifiedFiles.length > 0) {
+            files = files.filter(file => specifiedFiles.includes(path.basename(file)));
+        }
+
         asyncReduce(files, __readFile, {}, callback);
     });
 
