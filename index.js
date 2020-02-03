@@ -194,6 +194,7 @@ function createCSB(callback) {
 function addFilesToArchive(files, archive, callback) {
     const EDFS = require('edfs');
     const path = require('path');
+    const fs = require('fs');
 
     if (typeof files === 'string') {
         files = [files];
@@ -202,7 +203,22 @@ function addFilesToArchive(files, archive, callback) {
     asyncReduce(files, __addFile, null, callback);
 
     function __addFile(_, filePath, callback) {
-        archive.addFile(filePath, `${EDFS.constants.CSB.CONSTITUTION_FOLDER}/` + path.basename(filePath), callback);
+        // archive.addFile(filePath, `${EDFS.constants.CSB.CONSTITUTION_FOLDER}/` + path.basename(filePath), callback);
+        fs.stat(filePath, (err, stats) => {
+            if(err) {
+                return callback(err);
+            }
+
+            if(stats.isDirectory()) {
+                 fs.readdir(filePath, (err, fileNames) => {
+                     const filePaths = fileNames.map(fileName => path.join(filePath, fileName));
+                     asyncReduce(filePaths, __addFile, null, callback);
+                 });
+                // archive.addFolder(filePath, EDFS.constants.CSB.CONSTITUTION_FOLDER, callback);
+            } else {
+                archive.addFile(filePath, `${EDFS.constants.CSB.CONSTITUTION_FOLDER}/` + path.basename(filePath), callback);
+            }
+        });
     }
 }
 
