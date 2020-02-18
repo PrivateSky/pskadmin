@@ -2,7 +2,11 @@ function createConstitutionFromSources(sources, options, callback) {
     const child_process = require('child_process');
     const path = require('path');
     const fs = require('fs');
-    const pskBuildPath = path.resolve(path.join(__dirname, '../../psknode/bin/scripts/pskbuild.js'));
+
+    let pskBuildPath = path.resolve(path.join(__dirname, '../../psknode/bin/scripts/pskbuild.js'));
+    if(typeof process.env.PSK_ROOT_INSTALATION_FOLDER !== "undefined"){
+        pskBuildPath = path.resolve(path.join(process.env.PSK_ROOT_INSTALATION_FOLDER, 'psknode/bin/scripts/pskbuild.js'));
+    }
 
     let internalOptions = {
         constitutionName: 'constitution',
