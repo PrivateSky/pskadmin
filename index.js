@@ -9,7 +9,7 @@ function createConstitutionFromSources(sources, options, callback) {
     }
 
     let internalOptions = {
-        constitutionName: 'constitution',
+        constitutionName: 'domain',
         outputFolder: null,
         cleanupTmpDir: true
     };
