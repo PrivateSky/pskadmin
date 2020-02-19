@@ -5,7 +5,7 @@ function createConstitutionFromSources(sources, options, callback) {
     const pskBuildPath = path.resolve(path.join(__dirname, '../../psknode/bin/scripts/pskbuild.js'));
 
     let internalOptions = {
-        constitutionName: 'constitution',
+        constitutionName: 'domain',
         outputFolder: null,
         cleanupTmpDir: true
     };
