@@ -61,7 +61,7 @@ function createConstitutionFromSources(sources, options, callback) {
                 outputFolder = tmpFolder;
             }
 
-            child_process.exec(`node ${pskBuildPath} --projectMap=${projectMapPath} --source=${sourcesPaths} --output=${outputFolder}`, (err) => {
+            child_process.exec(`node ${pskBuildPath} --projectMap=${projectMapPath} --source=${sourcesPaths} --output=${outputFolder} --input=${tmpFolder}`, (err) => {
                 if (err) {
                     return callback(err);
                 }
